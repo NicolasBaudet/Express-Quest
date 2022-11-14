@@ -28,8 +28,25 @@ const database = require("./database");
 // ];
 
 const getMovies = (req, res) => {
+  let sql = "SELECT * FROM movies";
+  const sqlValues = [];
+
+  if (req.query.max_duration != null) {
+    sql += " WHERE duration <= ?";
+    sqlValues.push(req.query.max_duration);
+
+    if (req.query.color != null) {
+    sql += " AND color = ?";
+    sqlValues.push(req.query.color);
+  }
+} else if (req.query.color != null) {
+  sql += " WHERE color = ?";
+    sqlValues.push(req.query.color);
+}
+  
+
   database
-    .query("select * from movies")
+    .query(sql, sqlValues)
     .then(([movies]) => {
       res.json(movies);
     })
@@ -55,7 +72,7 @@ const getMovieById = (req, res) => {
   const id = parseInt(req.params.id);
 
   database
-    .query("select * from movies where id = ?", [id])
+    .query("SELECT * FROM movies WHERE id = ?", [id])
     .then(([movies]) => {
       if (movies[0] != null) {
 res.json(movies[0]);
@@ -69,7 +86,7 @@ res.json(movies[0]);
 
 const getUsers = (req, res) => {
   database
-    .query("select * from users")
+    .query("SELECT * FROM users")
     .then(([users]) => {
       res.json(users).status(200);
     })
@@ -79,7 +96,7 @@ const getUsersById = (req, res) => {
   const id = parseInt(req.params.id);
 
   database
-    .query("select * from users where id = ?", [id])
+    .query("SELECT * FROM users WHERE id = ?", [id])
     .then(([users]) => {
       if (users[0] != null) {
 res.json(users[0]).status(200);
@@ -126,12 +143,12 @@ const postUser = (req, res) => {
 
 const updateMovie = (req, res) => {
   const id = parseInt(req.params.id);
-  const { title, director, year, color, duration } = req.body;
+  const userData = req.body;
 
   database
     .query(
-      "update movies set title = ?, director = ?, year = ?, color = ?, duration = ? where id = ?",
-      [title, director, year, color, duration, id]
+      "UPDATE movies SET ? WHERE id = ?",
+      [userData, id]
     )
     .then(([result]) => {
       if (result.affectedRows === 0) {
@@ -148,12 +165,12 @@ const updateMovie = (req, res) => {
 
 const updateUser = (req, res) => {
   const id = parseInt(req.params.id);
-  const { firstname, lastname, email, city, language } = req.body;
+  const userData = req.body;
 
   database
     .query(
-      "update users set firstname = ?, lastname = ?, email = ?, city = ?, language = ? where id = ?",
-      [firstname, lastname, email, city, language, id]
+      "UPDATE users SET ? WHERE id = ?",
+      [userData, id]
     )
     .then(([result]) => {
       if (result.affectedRows === 0) {
@@ -172,7 +189,7 @@ const deleteMovie = (req, res) => {
   const id = parseInt(req.params.id);
 
   database
-    .query("delete from movies where id = ?", [id])
+    .query("DELETE FROM movies WHERE id = ?", [id])
     .then(([result]) => {
       if (result.affectedRows === 0) {
         res.status(404).send("Not Found");
@@ -190,7 +207,7 @@ const deleteUser = (req, res) => {
   const id = parseInt(req.params.id);
 
   database
-    .query("delete from users where id = ?", [id])
+    .query("DELETE FROM users WHERE id = ?", [id])
     .then(([result]) => {
       if (result.affectedRows === 0) {
         res.status(404).send("Not Found");
