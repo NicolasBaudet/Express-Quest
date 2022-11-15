@@ -43,7 +43,6 @@ const getMovies = (req, res) => {
   sql += " WHERE color = ?";
     sqlValues.push(req.query.color);
 }
-  
 
   database
     .query(sql, sqlValues)
@@ -85,25 +84,62 @@ res.json(movies[0]);
 };
 
 const getUsers = (req, res) => {
+  let sql = "SELECT * FROM users";
+  const sqlValues = [];
+
+  if (req.query.language != null) {
+    sql += " WHERE language = ?";
+    sqlValues.push(req.query.language);
+}
+
+if (req.query.city != null) {
+  sql += " WHERE city = ?";
+  sqlValues.push(req.query.city);
+}
+
   database
-    .query("SELECT * FROM users")
-    .then(([users]) => {
-      res.json(users).status(200);
-    })
+  .query(sql, sqlValues)
+  .then(([users]) => {
+    res.json(users);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send("Error retrieving data from database");
+  });
 };
 
-const getUsersById = (req, res) => {
-  const id = parseInt(req.params.id);
+// const getUserByLanguage = (req, res) => {
+//   let sql = "SELECT * FROM users";
+//   const sqlValues = [];
 
-  database
-    .query("SELECT * FROM users WHERE id = ?", [id])
-    .then(([users]) => {
-      if (users[0] != null) {
-res.json(users[0]).status(200);
-    } else {
-      res.status(404).send("not found");
-    }})
-};
+//   if (req.language != null) {
+//     sql += " WHERE language = ?";
+//     sqlValues.push(req.query.language);
+// }
+
+//   database
+//     .query(sql, sqlValues)
+//     .then(([users]) => {
+//       res.json(users);
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       res.status(500).send("Error retrieving data from database");
+//     });
+// };
+
+// const getUsersById = (req, res) => {
+//   const id = parseInt(req.params.id);
+
+//   database
+//     .query("SELECT * FROM users WHERE id = ?", [id])
+//     .then(([users]) => {
+//       if (users[0] != null) {
+// res.json(users[0]).status(200);
+//     } else {
+//       res.status(404).send("not found");
+//     }})
+// };
 
 const postMovie = (req, res) => {
   // console.log(req.body);
@@ -225,7 +261,7 @@ module.exports = {
   getMovies,
   getMovieById,
   getUsers,
-  getUsersById,
+  // getUsersById,
   postMovie,
   postUser,
   updateMovie,
